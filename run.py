@@ -1,11 +1,9 @@
 import cv2
-from ultralytics import YOLO
-import supervision as sv
-import cvzone
-import math
+from deepface import DeepFace
 
 cap = cv2.VideoCapture("/dev/video0")  
-model = YOLO("best.pt")
+
+COLOR = (255,0,255)
 
 if not cap.isOpened():
     print("Error: Could not open camera.")
@@ -17,23 +15,20 @@ while True:
     if not ret:
         print("Error: Can't receive frame (stream end?). Exiting ...")
         break
-
-    detections = model(frame)
-
-    for r in detections:
-        boxes = r.boxes
-        for box in boxes:
-            x1, y1, x2, y2 = box.xyxy[0]
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-            w, h = x2-x1, y2-y1
-            cvzone.cornerRect(frame, (x1, y1, w, h))
-
-            conf = math.ceil((box.conf[0]*100))/100
-
-            cls = box.cls[0]
-            name = cls
-
-            cvzone.putTextRect(frame, f'{name} 'f'{conf}', (max(0,x1), max(35,y1)), scale = 0.5, thickness=1)
+    try:
+        result = DeepFace.analyze(frame, actions=['emotion'])
+        print(result)
+        dominant_emotion = result[0]["dominant_emotion"]
+        bounding_box = result[0]["region"]
+        x1 = bounding_box["x"]
+        y1 = bounding_box["y"]
+        x2 = bounding_box["x"]+bounding_box["w"]+10
+        y2 = bounding_box["y"]+bounding_box["h"]+10
+        cv2.rectangle(frame, (x1, y1), (x2, y2), COLOR, 1)
+        cv2.putText(frame, f"{dominant_emotion}", (x1,y1-10), 0, 1, COLOR, 1)
+        
+    except:
+        print("Face not detected")
 
     cv2.imshow('Camera Feed', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -41,4 +36,5 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
 
