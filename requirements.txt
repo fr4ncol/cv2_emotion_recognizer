@@ -1,2 +1,2 @@
-deepface==0.0.81
-opencv_python==4.8.1.78
+deepface
+opencv_python
