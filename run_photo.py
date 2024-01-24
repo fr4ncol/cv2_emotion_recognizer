@@ -11,17 +11,19 @@ if frame is None:
     exit()
 
 try:
-    result = DeepFace.analyze(frame, actions=['emotion'])
+    result = DeepFace.analyze(frame, actions=['emotion', "race", "gender"])
     print(result)
     for face in result:
         dominant_emotion = face["dominant_emotion"]
+        dominant_race = face["dominant_race"]
+        dominant_gender = face["dominant_gender"]
         bounding_box = face["region"]
         x1 = bounding_box["x"]
         y1 = bounding_box["y"]
         x2 = bounding_box["x"] + bounding_box["w"] + 10
         y2 = bounding_box["y"] + bounding_box["h"] + 10
         cv2.rectangle(frame, (x1, y1), (x2, y2), COLOR, 1)
-        cv2.putText(frame, f"{dominant_emotion}", (x1, y1 - 10), 0, 1, COLOR, 1)
+        cv2.putText(frame, f"{dominant_emotion} | {dominant_race} | {dominant_gender}", (x1, y1 - 10), 0, 1, COLOR, 1)
 except Exception as e:
     print(f"Could not recognize a face.")
 
